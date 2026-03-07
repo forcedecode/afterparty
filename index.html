@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AfterParty 2025 — Ticketing System</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root { --bg:#0a0a0f; --card:#13131a; --border:#2a2a3a; --accent:#ff3c6e; --accent2:#ff9900; --text:#f0f0f5; --muted:#6b6b80; --success:#00d68f; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:30px 20px; }
+body::before { content:''; position:fixed; inset:0; background:radial-gradient(ellipse 70% 50% at 30% 10%, rgba(255,60,110,0.13) 0%, transparent 60%), radial-gradient(ellipse 60% 60% at 80% 90%, rgba(255,153,0,0.09) 0%, transparent 60%); pointer-events:none; z-index:0; }
+.container { max-width:480px; width:100%; position:relative; z-index:1; text-align:center; animation:fadeDown 0.7s ease; }
+.event-label { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--accent); margin-bottom:12px; font-weight:500; }
+h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(56px,14vw,100px); line-height:0.88; background:linear-gradient(135deg,#fff 0%,#ff9900 50%,#ff3c6e 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:12px; }
+.subtitle { color:var(--muted); font-size:14px; margin-bottom:36px; line-height:1.6; }
+.cards { display:flex; flex-direction:column; gap:14px; margin-bottom:32px; }
+.module-card { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:22px 24px; display:flex; align-items:center; gap:18px; text-decoration:none; color:var(--text); transition:all 0.25s; position:relative; overflow:hidden; }
+.module-card::before { content:''; position:absolute; top:0; left:0; bottom:0; width:4px; border-radius:4px 0 0 4px; }
+.module-card.admin::before { background:linear-gradient(180deg,var(--accent),var(--accent2)); }
+.module-card.scanner::before { background:linear-gradient(180deg,var(--success),#00f0a0); }
+.module-card.registration::before { background:linear-gradient(180deg,#4da6ff,#a78bfa); }
+.module-card.dashboard::before { background:linear-gradient(180deg,var(--accent2),#ffb833); }
+.module-card:hover { transform:translateX(6px); border-color:#3a3a4a; box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+.module-icon { font-size:32px; flex-shrink:0; width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; }
+.admin .module-icon { background:rgba(255,60,110,0.1); }
+.scanner .module-icon { background:rgba(0,214,143,0.1); }
+.registration .module-icon { background:rgba(77,166,255,0.1); }
+.dashboard .module-icon { background:rgba(255,153,0,0.1); }
+.module-info { flex:1; text-align:left; }
+.module-name { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:1.5px; margin-bottom:3px; }
+.admin .module-name { color:var(--accent); }
+.scanner .module-name { color:var(--success); }
+.registration .module-name { color:#4da6ff; }
+.dashboard .module-name { color:var(--accent2); }
+.module-desc { font-size:12px; color:var(--muted); line-height:1.5; }
+.arrow { font-size:18px; color:var(--muted); flex-shrink:0; transition:transform 0.2s; }
+.module-card:hover .arrow { transform:translateX(4px); color:var(--text); }
+.footer { font-size:11px; color:var(--muted); letter-spacing:1px; }
+.footer span { color:var(--accent); }
+@keyframes fadeDown { from{opacity:0;transform:translateY(-24px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="event-label">🎉 Ticketing System</div>
+  <h1>AFTER<br>PARTY<br>2025</h1>
+  <p class="subtitle">Select a module to get started</p>
+
+  <div class="cards">
+    <a class="module-card admin" href="1-admin-panel.html">
+      <div class="module-icon">🎟️</div>
+      <div class="module-info">
+        <div class="module-name">Admin Panel</div>
+        <div class="module-desc">Generate tickets & send via WhatsApp</div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <a class="module-card scanner" href="2-scanner.html">
+      <div class="module-icon">📱</div>
+      <div class="module-info">
+        <div class="module-name">QR Scanner</div>
+        <div class="module-desc">Scan & validate guest entry at the gate</div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <a class="module-card registration" href="3-registration.html">
+      <div class="module-icon">📋</div>
+      <div class="module-info">
+        <div class="module-name">Registration</div>
+        <div class="module-desc">Guest sign-up & payment form</div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <a class="module-card dashboard" href="4-dashboard.html">
+      <div class="module-icon">📊</div>
+      <div class="module-info">
+        <div class="module-name">Live Dashboard</div>
+        <div class="module-desc">Real-time entry stats on party day</div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+  </div>
+
+  <div class="footer">Powered by <span>AfterParty Ticketing System</span></div>
+</div>
+</body>
+</html>
