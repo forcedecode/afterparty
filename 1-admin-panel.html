@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Panel — AfterParty Tickets</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0a0a0f; --card: #13131a; --border: #2a2a3a;
+  --accent: #ff3c6e; --accent2: #ff9900; --text: #f0f0f5;
+  --muted: #6b6b80; --success: #00d68f;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+body::before { content:''; position:fixed; inset:0; background: radial-gradient(ellipse 60% 40% at 20% 10%, rgba(255,60,110,0.1) 0%, transparent 60%), radial-gradient(ellipse 50% 50% at 80% 80%, rgba(255,153,0,0.07) 0%, transparent 60%); pointer-events:none; z-index:0; }
+.container { max-width: 920px; margin: 0 auto; padding: 36px 20px; position: relative; z-index: 1; }
+header { text-align: center; margin-bottom: 40px; animation: fadeDown 0.6s ease; }
+.event-label { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; font-weight: 500; }
+h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(48px, 7vw, 80px); line-height: 0.9; background: linear-gradient(135deg, #fff 0%, #ff9900 50%, #ff3c6e 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px; }
+.subtitle { color: var(--muted); font-size: 14px; }
+.nav-links { display: flex; justify-content: center; gap: 12px; margin-bottom: 36px; flex-wrap: wrap; }
+.nav-btn { padding: 9px 20px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-block; }
+.nav-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.nav-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.form-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 32px; margin-bottom: 28px; animation: fadeUp 0.6s ease 0.1s both; }
+.form-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; color: var(--accent2); margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
+.form-title::before { content:''; display:inline-block; width:4px; height:20px; background:var(--accent2); border-radius:2px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.form-group { display: flex; flex-direction: column; gap: 7px; }
+.form-group.full { grid-column: 1 / -1; }
+label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+input, select { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 12px 15px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: all 0.2s; width: 100%; }
+input:focus, select:focus { border-color: var(--accent); background: rgba(255,60,110,0.05); box-shadow: 0 0 0 3px rgba(255,60,110,0.1); }
+select option { background: #1a1a2e; }
+.members-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.member-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-size: 13px; font-family: 'DM Sans', sans-serif; padding: 9px 16px; cursor: pointer; transition: all 0.2s; font-weight: 500; }
+.member-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.member-btn.active { background: var(--accent2); border-color: var(--accent2); color: #000; font-weight: 600; }
+.generate-btn { width: 100%; margin-top: 24px; padding: 15px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; border-radius: 12px; color: #fff; font-family: 'Bebas Neue', sans-serif; font-size: 19px; letter-spacing: 3px; cursor: pointer; transition: all 0.25s; }
+.generate-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,60,110,0.4); }
+.generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+/* Output */
+#output { display:none; animation: fadeUp 0.5s ease; }
+.ticket-wrapper { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 28px; margin-bottom: 20px; }
+.ticket-header-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px; color: var(--success); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+.tick-icon { width:20px; height:20px; background:var(--success); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#000; font-size:12px; font-weight:bold; }
+.ticket { background: #fff; border-radius: 14px; overflow: hidden; display: flex; max-width: 600px; margin: 0 auto; box-shadow: 0 16px 50px rgba(0,0,0,0.5); }
+.ticket-left { flex: 1; padding: 24px; background: #fff; color: #111; }
+.ticket-event-name { font-family: 'Bebas Neue', sans-serif; font-size: 11px; letter-spacing: 3px; color: #ff3c6e; margin-bottom: 5px; }
+.ticket-person-name { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: #111; line-height: 1; margin-bottom: 3px; }
+.ticket-email { font-size: 11px; color: #777; margin-bottom: 14px; }
+.ticket-details { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.ticket-detail-row { display: flex; flex-direction: column; gap: 2px; }
+.detail-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #aaa; font-weight: 600; }
+.detail-value { font-size: 13px; color: #111; font-weight: 600; }
+.members-badge { display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, #ff3c6e, #ff9900); color: #fff; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 600; margin-top: 3px; }
+.ticket-id { font-size: 9px; color: #bbb; margin-top: 10px; font-family: monospace; }
+.ticket-divider { width: 2px; background: repeating-linear-gradient(to bottom, #e0e0e0 0px, #e0e0e0 8px, transparent 8px, transparent 16px); position: relative; flex-shrink: 0; }
+.ticket-divider::before, .ticket-divider::after { content:''; position:absolute; left:50%; transform:translateX(-50%); width:18px; height:18px; background:var(--card); border-radius:50%; }
+.ticket-divider::before { top: -9px; } .ticket-divider::after { bottom: -9px; }
+.ticket-right { width: 148px; background: #f8f8f8; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 14px; gap: 10px; flex-shrink: 0; }
+.ticket-right .qr-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #aaa; font-weight: 600; text-align: center; }
+.one-time-badge { background: #ff3c6e; color: #fff; font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 9px; border-radius: 20px; font-weight: 600; }
+.ticket-actions { display: flex; gap: 10px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+.action-btn { padding: 11px 24px; border-radius: 10px; border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 7px; }
+.btn-download { background: var(--success); color: #000; }
+.btn-download:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,214,143,0.3); }
+.btn-copy { background: rgba(255,255,255,0.08); color: var(--text); border: 1px solid var(--border); }
+.btn-copy:hover { border-color: var(--accent2); color: var(--accent2); }
+.btn-whatsapp { background: #25D366; color: #fff; }
+.btn-whatsapp:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,211,102,0.35); }
+.btn-new { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-new:hover { border-color: var(--text); color: var(--text); }
+.whatsapp-note { margin-top: 12px; background: rgba(37,211,102,0.07); border: 1px solid rgba(37,211,102,0.2); border-radius: 10px; padding: 11px 15px; font-size: 12px; color: #25D366; text-align: center; }
+/* Toast */
+.toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--success); color: #000; padding: 13px 28px; border-radius: 50px; font-weight: 600; font-size: 14px; z-index: 999; transition: transform 0.3s ease; pointer-events:none; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+/* Tickets table */
+.tickets-section { margin-top: 36px; animation: fadeUp 0.5s ease 0.2s both; }
+.section-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.count-badge { background: var(--accent); color: #fff; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; border-radius: 20px; padding: 2px 10px; letter-spacing: 0; }
+.ticket-list { display: flex; flex-direction: column; gap: 10px; }
+.ticket-row { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; transition: border-color 0.2s; }
+.t-avatar { width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 17px; color: #fff; flex-shrink: 0; }
+.t-info { flex: 1; }
+.t-name { font-weight: 600; font-size: 14px; }
+.t-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.t-members { font-size: 11px; font-weight: 600; color: var(--accent2); background: rgba(255,153,0,0.1); border: 1px solid rgba(255,153,0,0.2); padding: 3px 9px; border-radius: 20px; }
+.status-used { font-size: 11px; font-weight: 600; color: #ff3c6e; background: rgba(255,60,110,0.1); border: 1px solid rgba(255,60,110,0.2); padding: 3px 9px; border-radius: 20px; }
+.status-unused { font-size: 11px; font-weight: 600; color: var(--success); background: rgba(0,214,143,0.08); border: 1px solid rgba(0,214,143,0.2); padding: 3px 9px; border-radius: 20px; }
+.loading { text-align: center; color: var(--muted); padding: 28px; font-size: 14px; }
+.spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+@media(max-width:600px) { .form-grid { grid-template-columns: 1fr; } .ticket { flex-direction: column; } .ticket-right { width:100%; flex-direction:row; justify-content:space-around; padding:18px; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="event-label">🎉 AfterParty Ticketing System</div>
+    <h1>ADMIN<br>PANEL</h1>
+    <p class="subtitle">Generate & manage guest entry tickets</p>
+  </header>
+
+  <div class="nav-links">
+    <a class="nav-btn active" href="1-admin-panel.html">🎟️ Admin Panel</a>
+    <a class="nav-btn" href="2-scanner.html">📱 QR Scanner</a>
+    <a class="nav-btn" href="3-registration.html">📋 Registration</a>
+    <a class="nav-btn" href="4-dashboard.html">📊 Dashboard</a>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">New Guest Ticket</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Full Name *</label>
+        <input type="text" id="guestName" placeholder="e.g. Arjun Mehta"/>
+      </div>
+      <div class="form-group">
+        <label>Email Address *</label>
+        <input type="email" id="guestEmail" placeholder="e.g. arjun@email.com"/>
+      </div>
+      <div class="form-group">
+        <label>Phone Number *</label>
+        <input type="tel" id="guestPhone" placeholder="e.g. 9876543210"/>
+      </div>
+      <div class="form-group">
+        <label>Payment Reference</label>
+        <input type="text" id="paymentRef" placeholder="e.g. TXN123456"/>
+      </div>
+      <div class="form-group full">
+        <label>Number of Members</label>
+        <div class="members-row" id="membersRow">
+          <button class="member-btn active" onclick="selectMembers(this,1)">1 Person</button>
+          <button class="member-btn" onclick="selectMembers(this,2)">2 People</button>
+          <button class="member-btn" onclick="selectMembers(this,3)">3 People</button>
+          <button class="member-btn" onclick="selectMembers(this,4)">4 People</button>
+          <button class="member-btn" onclick="selectMembers(this,5)">5 People</button>
+        </div>
+      </div>
+      <div class="form-group full">
+        <label>Event Name</label>
+        <input type="text" id="eventName" placeholder="After Party 2025" value="After Party 2025"/>
+      </div>
+    </div>
+    <button class="generate-btn" id="genBtn" onclick="generateTicket()">⚡ GENERATE & SAVE TICKET</button>
+  </div>
+
+  <!-- Output -->
+  <div id="output">
+    <div class="ticket-wrapper">
+      <div class="ticket-header-label">
+        <span class="tick-icon">✓</span>
+        TICKET SAVED TO DATABASE ✅
+      </div>
+      <div class="ticket" id="ticketEl">
+        <div class="ticket-left">
+          <div class="ticket-event-name" id="t-event"></div>
+          <div class="ticket-person-name" id="t-name"></div>
+          <div class="ticket-email" id="t-email"></div>
+          <div class="ticket-details">
+            <div class="ticket-detail-row"><span class="detail-label">Phone</span><span class="detail-value" id="t-phone">—</span></div>
+            <div class="ticket-detail-row"><span class="detail-label">Payment Ref</span><span class="detail-value" id="t-ref">—</span></div>
+            <div class="ticket-detail-row"><span class="detail-label">Group Size</span><div class="members-badge" id="t-members"></div></div>
+          </div>
+          <div class="ticket-id" id="t-id"></div>
+        </div>
+        <div class="ticket-divider"></div>
+        <div class="ticket-right">
+          <div class="qr-label">Scan for Entry</div>
+          <div id="qrcode-display"></div>
+          <div class="one-time-badge">ONE TIME USE</div>
+        </div>
+      </div>
+      <div class="ticket-actions">
+        <button class="action-btn btn-whatsapp" onclick="shareWhatsApp()">📲 WhatsApp</button>
+        <button class="action-btn btn-download" onclick="downloadTicket()">⬇ Download</button>
+        <button class="action-btn btn-copy" onclick="copyTicketID()">📋 Copy ID</button>
+        <button class="action-btn btn-new" onclick="newTicket()">+ New Ticket</button>
+      </div>
+      <div class="whatsapp-note" id="waNote" style="display:none">✅ WhatsApp opened! Download the ticket image and attach it to the chat before sending.</div>
+    </div>
+  </div>
+
+  <!-- All Tickets -->
+  <div class="tickets-section">
+    <div class="section-title">All Tickets <span class="count-badge" id="ticketCount">0</span>
+      <button onclick="loadTickets()" style="margin-left:auto;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;">🔄 Refresh</button>
+    </div>
+    <div class="ticket-list" id="ticketList"><div class="loading"><span class="spinner"></span>Loading tickets...</div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbziK5ejeBR418BAAQDIrsLQFS3CYyZL2TwC0daQkEvkMyfyWhW2JCJes82D1pCtz3TzaA/exec';
+let selectedMembers = 1;
+let currentTicketID = '';
+let currentPhone = '';
+
+function selectMembers(btn, count) {
+  document.querySelectorAll('.member-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedMembers = count;
+}
+
+function generateUID() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let id = 'TKT-';
+  for (let i = 0; i < 8; i++) { if (i === 4) id += '-'; id += chars[Math.floor(Math.random() * chars.length)]; }
+  return id;
+}
+
+async function generateTicket() {
+  const name = document.getElementById('guestName').value.trim();
+  const email = document.getElementById('guestEmail').value.trim();
+  const phone = document.getElementById('guestPhone').value.trim();
+  const ref = document.getElementById('paymentRef').value.trim();
+  const event = document.getElementById('eventName').value.trim() || 'After Party 2025';
+  if (!name) { showToast('Please enter guest name', true); return; }
+  if (!email) { showToast('Please enter email address', true); return; }
+  if (!phone) { showToast('Please enter phone number', true); return; }
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true; btn.textContent = '⏳ SAVING TO DATABASE...';
+
+  const ticketID = generateUID();
+  currentTicketID = ticketID;
+  currentPhone = phone;
+  const timestamp = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+
+  const payload = { action: 'saveTicket', ticketID, name, email, phone, members: selectedMembers, event, payRef: ref || 'N/A' };
+
+  try {
+    const res = await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+
+    // QR data payload - keep minimal to avoid overflow
+    const qrData = JSON.stringify({ id: ticketID, m: selectedMembers });
+
+    document.getElementById('t-event').textContent = event.toUpperCase();
+    document.getElementById('t-name').textContent = name.toUpperCase();
+    document.getElementById('t-email').textContent = email;
+    document.getElementById('t-phone').textContent = phone;
+    document.getElementById('t-ref').textContent = ref || '—';
+    document.getElementById('t-members').innerHTML = `👥 ${selectedMembers} ${selectedMembers === 1 ? 'Guest' : 'Guests'}`;
+    document.getElementById('t-id').textContent = `Ticket ID: ${ticketID} • ${timestamp}`;
+
+    const qrContainer = document.getElementById('qrcode-display');
+    qrContainer.innerHTML = '';
+    new QRCode(qrContainer, { text: qrData, width: 116, height: 116, colorDark: '#111111', colorLight: '#f8f8f8', correctLevel: QRCode.CorrectLevel.M });
+
+    document.getElementById('output').style.display = 'block';
+    document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showToast('✅ Ticket saved to database!');
+    loadTickets();
+  } catch (err) {
+    showToast('❌ Error: ' + err.message, true);
+  } finally {
+    btn.disabled = false; btn.textContent = '⚡ GENERATE & SAVE TICKET';
+  }
+}
+
+async function loadTickets() {
+  const list = document.getElementById('ticketList');
+  list.innerHTML = '<div class="loading"><span class="spinner"></span>Loading...</div>';
+  try {
+    const res = await fetch(`${API}?action=getTickets`);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+    const tickets = data.tickets;
+    document.getElementById('ticketCount').textContent = tickets.length;
+    if (tickets.length === 0) { list.innerHTML = '<div class="loading">No tickets yet. Generate the first one above!</div>'; return; }
+    list.innerHTML = tickets.slice().reverse().map(t => `
+      <div class="ticket-row">
+        <div class="t-avatar">${(t['Name']||'?')[0].toUpperCase()}</div>
+        <div class="t-info">
+          <div class="t-name">${t['Name']}</div>
+          <div class="t-meta">${t['Email']} · ${t['Phone']} · ${t['Issued At']}</div>
+        </div>
+        <div class="t-members">👥 ${t['Members']}</div>
+        <div class="${t['Status'] === 'USED' ? 'status-used' : 'status-unused'}">${t['Status'] === 'USED' ? '⛔ USED' : '✅ UNUSED'}</div>
+      </div>`).join('');
+  } catch (err) {
+    list.innerHTML = `<div class="loading">Error loading tickets: ${err.message}</div>`;
+  }
+}
+
+function downloadTicket() {
+  const qrCanvas = document.querySelector('#qrcode-display canvas');
+  if (!qrCanvas) { showToast('Generate a ticket first', true); return; }
+  const qrDataURL = qrCanvas.toDataURL('image/png');
+  const name = document.getElementById('t-name').textContent;
+  const event = document.getElementById('t-event').textContent;
+  const email = document.getElementById('t-email').textContent;
+  const phone = document.getElementById('t-phone').textContent;
+  const ref = document.getElementById('t-ref').textContent;
+  const members = document.getElementById('t-members').textContent.replace('👥 ','');
+  const tid = document.getElementById('t-id').textContent;
+
+  const W = 700, H = 260;
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.roundRect(0,0,W,H,16); ctx.fill();
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,'#ff3c6e'); grad.addColorStop(1,'#ff9900');
+  ctx.fillStyle = grad; ctx.fillRect(0,0,6,H);
+  ctx.fillStyle='#ff3c6e'; ctx.font='bold 11px Arial'; ctx.fillText(event,28,36);
+  ctx.fillStyle='#111'; ctx.font='bold 28px Arial'; ctx.fillText(name,28,70);
+  ctx.fillStyle='#777'; ctx.font='13px Arial'; ctx.fillText(email,28,94);
+  ctx.strokeStyle='#eee'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(28,108); ctx.lineTo(490,108); ctx.stroke();
+  [['PHONE',phone],['PAYMENT REF',ref],['GROUP SIZE',members]].forEach(([lbl,val],i)=>{
+    const x=28+i*155;
+    ctx.fillStyle='#aaa'; ctx.font='9px Arial'; ctx.fillText(lbl,x,128);
+    ctx.fillStyle='#111'; ctx.font='bold 13px Arial'; ctx.fillText(val,x,146);
+  });
+  ctx.fillStyle='#bbb'; ctx.font='10px monospace'; ctx.fillText(tid,28,H-18);
+  ctx.setLineDash([6,6]); ctx.strokeStyle='#ddd'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(510,10); ctx.lineTo(510,H-10); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#f8f8f8'; ctx.beginPath(); ctx.roundRect(516,0,W-516,H,[0,16,16,0]); ctx.fill();
+  ctx.fillStyle='#aaa'; ctx.font='bold 9px Arial'; ctx.textAlign='center'; ctx.fillText('SCAN FOR ENTRY',W-92,26);
+  const qrImg = new Image();
+  qrImg.onload = () => {
+    ctx.drawImage(qrImg,W-160,34,136,136);
+    ctx.fillStyle='#ff3c6e'; ctx.beginPath(); ctx.roundRect(W-150,182,116,20,10); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='bold 9px Arial'; ctx.fillText('ONE TIME USE',W-92,195);
+    const link = document.createElement('a');
+    link.download = `ticket-${currentTicketID}.png`;
+    link.href = c.toDataURL('image/png');
+    link.click();
+  };
+  qrImg.src = qrDataURL;
+}
+
+function shareWhatsApp() {
+  const name = document.getElementById('guestName').value.trim();
+  const event = document.getElementById('eventName').value.trim() || 'After Party 2025';
+  const phone = currentPhone.replace(/\D/g,'');
+  const message = `🎉 *Your Entry Ticket is Ready!*\n\nHey ${name}! Your registration for *${event}* is confirmed.\n\n🎟️ *Ticket ID:* ${currentTicketID}\n👥 *Group Size:* ${selectedMembers} ${selectedMembers===1?'Person':'People'}\n\n📌 *Instructions:*\n• Show QR code at the entry gate\n• Valid for *ONE TIME USE only*\n• Do not share your QR code\n\nSee you at the party! 🥳`;
+  const waURL = phone ? `https://wa.me/${phone.startsWith('91')?phone:'91'+phone}?text=${encodeURIComponent(message)}` : `https://wa.me/?text=${encodeURIComponent(message)}`;
+  window.open(waURL,'_blank');
+  document.getElementById('waNote').style.display = 'block';
+}
+
+function copyTicketID() {
+  const id = currentTicketID;
+  if (!id) { showToast('No ticket generated yet', true); return; }
+  try {
+    if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(id); }
+    else { const ta=document.createElement('textarea'); ta.value=id; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.focus(); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
+    showToast('📋 Ticket ID copied!');
+  } catch(e) { showToast('Copy failed', true); }
+}
+
+function newTicket() {
+  document.getElementById('output').style.display = 'none';
+  ['guestName','guestEmail','guestPhone','paymentRef'].forEach(id => document.getElementById(id).value='');
+  document.querySelectorAll('.member-btn').forEach((b,i) => b.classList.toggle('active',i===0));
+  selectedMembers=1; currentTicketID=''; currentPhone='';
+  document.querySelector('.form-card').scrollIntoView({behavior:'smooth'});
+}
+
+function showToast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = isError ? '#ff3c6e' : 'var(--success)';
+  t.style.color = '#fff';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+loadTickets();
+</script>
+</body>
+</html>
