@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Live Dashboard — AfterParty</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root { --bg:#0a0a0f; --card:#13131a; --border:#2a2a3a; --accent:#ff3c6e; --accent2:#ff9900; --text:#f0f0f5; --muted:#6b6b80; --success:#00d68f; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; }
+body::before { content:''; position:fixed; inset:0; background:radial-gradient(ellipse 60% 40% at 20% 10%, rgba(255,60,110,0.1) 0%, transparent 60%), radial-gradient(ellipse 50% 50% at 80% 80%, rgba(255,153,0,0.07) 0%, transparent 60%); pointer-events:none; z-index:0; }
+.container { max-width:900px; margin:0 auto; padding:32px 20px; position:relative; z-index:1; }
+header { text-align:center; margin-bottom:32px; animation:fadeDown 0.6s ease; }
+.event-label { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--accent); margin-bottom:10px; font-weight:500; }
+h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(44px,7vw,72px); line-height:0.9; background:linear-gradient(135deg,#fff 0%,#ff9900 50%,#ff3c6e 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:10px; }
+.subtitle { color:var(--muted); font-size:13px; }
+.live-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(0,214,143,0.1); border:1px solid rgba(0,214,143,0.3); border-radius:20px; padding:5px 14px; font-size:12px; color:var(--success); font-weight:600; margin-top:10px; }
+.live-dot { width:7px; height:7px; background:var(--success); border-radius:50%; animation:pulse 1.5s infinite; }
+.nav-links { display:flex; justify-content:center; gap:10px; margin-bottom:28px; flex-wrap:wrap; }
+.nav-btn { padding:8px 18px; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; cursor:pointer; text-decoration:none; transition:all 0.2s; display:inline-block; }
+.nav-btn:hover { border-color:var(--accent2); color:var(--accent2); }
+.nav-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+/* Stats grid */
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:28px; animation:fadeUp 0.6s ease 0.1s both; }
+.stat-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px 20px; position:relative; overflow:hidden; transition:transform 0.2s; }
+.stat-card:hover { transform:translateY(-2px); }
+.stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+.stat-card.red::before { background:linear-gradient(90deg,var(--accent),transparent); }
+.stat-card.orange::before { background:linear-gradient(90deg,var(--accent2),transparent); }
+.stat-card.green::before { background:linear-gradient(90deg,var(--success),transparent); }
+.stat-card.blue::before { background:linear-gradient(90deg,#4da6ff,transparent); }
+.stat-icon { font-size:28px; margin-bottom:10px; }
+.stat-value { font-family:'Bebas Neue',sans-serif; font-size:44px; line-height:1; margin-bottom:4px; }
+.stat-card.red .stat-value { color:var(--accent); }
+.stat-card.orange .stat-value { color:var(--accent2); }
+.stat-card.green .stat-value { color:var(--success); }
+.stat-card.blue .stat-value { color:#4da6ff; }
+.stat-label { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-weight:500; }
+/* Progress bar */
+.progress-section { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px; margin-bottom:28px; animation:fadeUp 0.6s ease 0.15s both; }
+.progress-title { font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:2px; color:var(--muted); margin-bottom:16px; }
+.progress-row { margin-bottom:16px; }
+.progress-label { display:flex; justify-content:space-between; font-size:12px; margin-bottom:7px; }
+.progress-label span:first-child { color:var(--text); font-weight:500; }
+.progress-label span:last-child { color:var(--muted); }
+.progress-bar { background:rgba(255,255,255,0.06); border-radius:20px; height:10px; overflow:hidden; }
+.progress-fill { height:100%; border-radius:20px; transition:width 0.8s ease; }
+.fill-red { background:linear-gradient(90deg,var(--accent),#ff6b8a); }
+.fill-green { background:linear-gradient(90deg,var(--success),#00f0a0); }
+.fill-orange { background:linear-gradient(90deg,var(--accent2),#ffb833); }
+/* Tickets table */
+.table-section { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px; margin-bottom:28px; animation:fadeUp 0.6s ease 0.2s both; }
+.table-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+.table-title { font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:2px; color:var(--muted); }
+.refresh-btn { background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--muted); padding:7px 14px; border-radius:8px; cursor:pointer; font-size:12px; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+.refresh-btn:hover { border-color:var(--accent2); color:var(--accent2); }
+.filter-row { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+.filter-btn { padding:6px 14px; border-radius:20px; border:1px solid var(--border); background:transparent; color:var(--muted); font-size:12px; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.2s; }
+.filter-btn:hover { border-color:var(--accent2); color:var(--accent2); }
+.filter-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+.t-table { width:100%; border-collapse:collapse; }
+.t-table th { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); font-weight:600; padding:0 12px 10px; text-align:left; }
+.t-table td { padding:10px 12px; font-size:13px; border-top:1px solid rgba(255,255,255,0.04); }
+.t-table tr:hover td { background:rgba(255,255,255,0.02); }
+.badge-used { background:rgba(255,60,110,0.12); color:var(--accent); border-radius:20px; padding:3px 10px; font-size:11px; font-weight:600; }
+.badge-unused { background:rgba(0,214,143,0.1); color:var(--success); border-radius:20px; padding:3px 10px; font-size:11px; font-weight:600; }
+.loading { text-align:center; color:var(--muted); padding:24px; font-size:13px; }
+.spinner { display:inline-block; width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; margin-right:8px; vertical-align:middle; }
+.last-updated { text-align:center; font-size:11px; color:var(--muted); margin-top:8px; }
+/* Registrations */
+.reg-section { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px; animation:fadeUp 0.6s ease 0.25s both; }
+.reg-item { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+.reg-item:last-child { border-bottom:none; }
+.reg-avatar { width:32px; height:32px; background:linear-gradient(135deg,var(--accent2),#ffb833); border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:16px; color:#000; flex-shrink:0; }
+.reg-info { flex:1; }
+.reg-name { font-weight:600; font-size:13px; }
+.reg-meta { font-size:11px; color:var(--muted); margin-top:2px; }
+.reg-pending { font-size:11px; font-weight:600; color:var(--accent2); background:rgba(255,153,0,0.1); border:1px solid rgba(255,153,0,0.2); padding:3px 9px; border-radius:20px; }
+.reg-done { font-size:11px; font-weight:600; color:var(--success); background:rgba(0,214,143,0.08); border:1px solid rgba(0,214,143,0.2); padding:3px 9px; border-radius:20px; }
+.mark-btn { font-size:11px; font-weight:600; color:#000; background:var(--success); border:none; padding:6px 12px; border-radius:8px; cursor:pointer; white-space:nowrap; transition:all 0.2s; font-family:'DM Sans',sans-serif; }
+.mark-btn:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,214,143,0.3); }
+.mark-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+@keyframes spin { to{transform:rotate(360deg)} }
+@keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@media(max-width:600px) { .stats-grid{grid-template-columns:1fr 1fr;} .t-table{font-size:11px;} }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="event-label">🎉 AfterParty Ticketing System</div>
+    <h1>LIVE<br>DASHBOARD</h1>
+    <div class="live-badge"><span class="live-dot"></span> AUTO-REFRESH EVERY 30s</div>
+  </header>
+
+  <div class="nav-links">
+    <a class="nav-btn" href="1-admin-panel.html">🎟️ Admin Panel</a>
+    <a class="nav-btn" href="2-scanner.html">📱 QR Scanner</a>
+    <a class="nav-btn" href="3-registration.html">📋 Registration</a>
+    <a class="nav-btn active" href="4-dashboard.html">📊 Dashboard</a>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card red"><div class="stat-icon">🎟️</div><div class="stat-value" id="totalTickets">—</div><div class="stat-label">Total Tickets</div></div>
+    <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-value" id="usedTickets">—</div><div class="stat-label">Entered</div></div>
+    <div class="stat-card orange"><div class="stat-icon">⏳</div><div class="stat-value" id="unusedTickets">—</div><div class="stat-label">Not Yet Arrived</div></div>
+    <div class="stat-card blue"><div class="stat-icon">👥</div><div class="stat-value" id="enteredMembers">—</div><div class="stat-label">People Inside</div></div>
+  </div>
+
+  <!-- Progress bars -->
+  <div class="progress-section">
+    <div class="progress-title">ENTRY PROGRESS</div>
+    <div class="progress-row">
+      <div class="progress-label"><span>Tickets Scanned</span><span id="prog1Label">0 / 0</span></div>
+      <div class="progress-bar"><div class="progress-fill fill-green" id="prog1" style="width:0%"></div></div>
+    </div>
+    <div class="progress-row">
+      <div class="progress-label"><span>People Entered</span><span id="prog2Label">0 / 0</span></div>
+      <div class="progress-bar"><div class="progress-fill fill-red" id="prog2" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- Tickets Table -->
+  <div class="table-section">
+    <div class="table-header">
+      <div class="table-title">ALL TICKETS</div>
+      <button class="refresh-btn" onclick="loadDashboard()">🔄 Refresh Now</button>
+    </div>
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="filterTickets('all',this)">All</button>
+      <button class="filter-btn" onclick="filterTickets('UNUSED',this)">✅ Not Arrived</button>
+      <button class="filter-btn" onclick="filterTickets('USED',this)">⛔ Entered</button>
+    </div>
+    <div id="tableContainer"><div class="loading"><span class="spinner"></span>Loading...</div></div>
+    <div class="last-updated" id="lastUpdated"></div>
+  </div>
+
+  <!-- Pending Registrations -->
+  <div class="reg-section">
+    <div class="table-header">
+      <div class="table-title">PENDING REGISTRATIONS <span style="font-size:13px;color:var(--accent2);font-family:'DM Sans',sans-serif;font-weight:600;" id="pendingCount"></span></div>
+    </div>
+    <div id="regList"><div class="loading">Loading registrations...</div></div>
+  </div>
+</div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbziK5ejeBR418BAAQDIrsLQFS3CYyZL2TwC0daQkEvkMyfyWhW2JCJes82D1pCtz3TzaA/exec';
+let allTickets = [];
+let currentFilter = 'all';
+
+async function loadDashboard() {
+  try {
+    const [statsRes, ticketsRes, regsRes] = await Promise.all([
+      fetch(`${API}?action=getStats`),
+      fetch(`${API}?action=getTickets`),
+      fetch(`${API}?action=getRegistrations`)
+    ]);
+    const stats = await statsRes.json();
+    const ticketsData = await ticketsRes.json();
+    const regsData = await regsRes.json();
+
+    if (stats.success) {
+      document.getElementById('totalTickets').textContent = stats.totalTickets;
+      document.getElementById('usedTickets').textContent = stats.usedTickets;
+      document.getElementById('unusedTickets').textContent = stats.unusedTickets;
+      document.getElementById('enteredMembers').textContent = stats.enteredMembers;
+
+      const pct1 = stats.totalTickets ? Math.round((stats.usedTickets/stats.totalTickets)*100) : 0;
+      const pct2 = stats.totalMembers ? Math.round((stats.enteredMembers/stats.totalMembers)*100) : 0;
+      document.getElementById('prog1').style.width = pct1+'%';
+      document.getElementById('prog1Label').textContent = `${stats.usedTickets} / ${stats.totalTickets}`;
+      document.getElementById('prog2').style.width = pct2+'%';
+      document.getElementById('prog2Label').textContent = `${stats.enteredMembers} / ${stats.totalMembers}`;
+    }
+
+    if (ticketsData.success) {
+      allTickets = ticketsData.tickets;
+      renderTable(currentFilter);
+    }
+
+    // Render registrations
+    const regList = document.getElementById('regList');
+    if (regsData.success && regsData.registrations.length > 0) {
+      document.getElementById('pendingCount').textContent = `(${regsData.registrations.length} pending)`;
+      regList.innerHTML = regsData.registrations.map((r, idx) => `
+        <div class="reg-item" id="reg-${idx}">
+          <div class="reg-avatar">${(r['Name']||'?')[0].toUpperCase()}</div>
+          <div class="reg-info">
+            <div class="reg-name">${r['Name']||'—'}</div>
+            <div class="reg-meta">📞 ${r['Phone']||'—'} · 👥 ${r['Members']||1} · 💳 ${r['Payment Ref']||'—'}</div>
+            <div class="reg-meta" style="margin-top:2px">📧 ${r['Email']||'—'} · 🕐 ${r['Timestamp']||''}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0">
+            <div class="reg-pending">⏳ PENDING</div>
+            <button class="mark-btn" id="markbtn-${idx}" onclick="markTicketGenerated('${r['Name']}','${r['Phone']}',${idx})">✅ Mark Ticket Sent</button>
+          </div>
+        </div>`).join('');
+    } else {
+      document.getElementById('pendingCount').textContent = '';
+      regList.innerHTML = '<div class="loading">No pending registrations</div>';
+    }
+
+    document.getElementById('lastUpdated').textContent = `Last updated: ${new Date().toLocaleTimeString('en-IN')}`;
+  } catch (err) {
+    document.getElementById('tableContainer').innerHTML = `<div class="loading">Error: ${err.message}</div>`;
+    document.getElementById('regList').innerHTML = `<div class="loading">Error loading registrations</div>`;
+  }
+}
+
+function renderTable(filter) {
+  const filtered = filter === 'all' ? allTickets : allTickets.filter(t => t['Status'] === filter);
+  if (filtered.length === 0) {
+    document.getElementById('tableContainer').innerHTML = '<div class="loading">No tickets found</div>';
+    return;
+  }
+  document.getElementById('tableContainer').innerHTML = `
+    <table class="t-table">
+      <thead><tr>
+        <th>Name</th><th>Phone</th><th>Members</th><th>Status</th><th>Issued</th>
+      </tr></thead>
+      <tbody>${filtered.slice().reverse().map(t=>`
+        <tr>
+          <td><strong>${t['Name']||'—'}</strong><br><span style="color:var(--muted);font-size:11px">${t['Email']||''}</span></td>
+          <td>${t['Phone']||'—'}</td>
+          <td>👥 ${t['Members']||1}</td>
+          <td><span class="${t['Status']==='USED'?'badge-used':'badge-unused'}">${t['Status']==='USED'?'⛔ USED':'✅ UNUSED'}</span></td>
+          <td style="color:var(--muted);font-size:11px">${t['Issued At']||'—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function filterTickets(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable(filter);
+}
+
+async function markTicketGenerated(name, phone, idx) {
+  const btn = document.getElementById(`markbtn-${idx}`);
+  btn.disabled = true; btn.textContent = '⏳ Updating...';
+  try {
+    const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'updateRegistrationStatus', name, phone }) });
+    const data = await res.json();
+    if (data.success) {
+      const row = document.getElementById(`reg-${idx}`);
+      row.querySelector('.reg-pending').outerHTML = '<div class="reg-done">🎟️ TICKET SENT</div>';
+      btn.style.display = 'none';
+    } else {
+      btn.disabled = false; btn.textContent = '✅ Mark Ticket Sent';
+      alert('Error: ' + data.message);
+    }
+  } catch (err) {
+    btn.disabled = false; btn.textContent = '✅ Mark Ticket Sent';
+    alert('Network error: ' + err.message);
+  }
+}
+
+loadDashboard();
+setInterval(loadDashboard, 30000);
+</script>
+</body>
+</html>
