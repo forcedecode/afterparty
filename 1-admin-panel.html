@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin — ChronicWaves</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+:root { --bg:#0d0d0d; --card:#161616; --border:#222; --text:#f0f0f0; --muted:#666; --accent:#c084fc; --dim:#2a2a2a; --success:#4ade80; }
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; }
+.container { max-width:860px; margin:0 auto; padding:28px 16px; }
+.header { text-align:center; margin-bottom:24px; }
+.tag { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+.logo { font-family:'Syne',sans-serif; font-size:clamp(28px,7vw,44px); font-weight:800; color:var(--text); line-height:1; margin-bottom:4px; }
+.sub { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--accent); font-family:'Syne',sans-serif; font-weight:600; }
+.nav { display:flex; justify-content:center; gap:8px; margin:20px 0 24px; flex-wrap:wrap; }
+.nav a { padding:7px 14px; border-radius:7px; border:1px solid var(--border); color:var(--muted); font-size:11px; text-decoration:none; transition:all 0.2s; }
+.nav a:hover, .nav a.active { border-color:#444; color:var(--text); background:var(--dim); }
+.form-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:22px; margin-bottom:16px; }
+.sec-title { font-family:'Syne',sans-serif; font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media(max-width:500px) { .form-grid { grid-template-columns:1fr; } }
+.form-group { display:flex; flex-direction:column; gap:6px; }
+.form-group.full { grid-column:1/-1; }
+label { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-weight:500; }
+input { background:#0d0d0d; border:1px solid var(--border); border-radius:7px; padding:10px 13px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px; outline:none; transition:border-color 0.2s; width:100%; }
+input:focus { border-color:#444; }
+.members-row { display:flex; gap:7px; flex-wrap:wrap; }
+.member-btn { background:#0d0d0d; border:1px solid var(--border); border-radius:6px; color:var(--muted); font-size:12px; font-family:'DM Sans',sans-serif; padding:8px 13px; cursor:pointer; transition:all 0.2s; }
+.member-btn:hover { border-color:#444; color:var(--text); }
+.member-btn.active { background:var(--text); border-color:var(--text); color:#000; font-weight:600; }
+.gen-btn { width:100%; margin-top:16px; padding:13px; background:var(--text); border:none; border-radius:9px; color:#000; font-family:'Syne',sans-serif; font-size:14px; font-weight:800; letter-spacing:2px; cursor:pointer; transition:all 0.2s; text-transform:uppercase; }
+.gen-btn:hover { background:#ddd; }
+.gen-btn:disabled { opacity:0.5; cursor:not-allowed; }
+
+/* Output ticket */
+#output { display:none; }
+.ticket-wrap { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:22px; margin-bottom:16px; }
+.success-label { font-family:'Syne',sans-serif; font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--success); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.ticket { background:#fff; border-radius:10px; overflow:hidden; display:flex; max-width:580px; margin:0 auto; box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+.tl { flex:1; padding:22px; }
+.tl-event { font-size:10px; letter-spacing:3px; color:#c084fc; margin-bottom:4px; font-weight:600; text-transform:uppercase; }
+.tl-name { font-family:'Syne',sans-serif; font-size:24px; font-weight:800; color:#111; line-height:1; margin-bottom:3px; }
+.tl-email { font-size:11px; color:#888; margin-bottom:14px; }
+.tl-details { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+.tl-row { display:flex; flex-direction:column; gap:1px; }
+.tl-lbl { font-size:8px; letter-spacing:2px; text-transform:uppercase; color:#aaa; }
+.tl-val { font-size:13px; color:#111; font-weight:600; }
+.tl-badge { display:inline-flex; align-items:center; gap:4px; background:#111; color:#fff; border-radius:20px; padding:5px 12px; font-size:12px; font-weight:600; margin-top:2px; }
+.tl-tid { font-size:9px; color:#bbb; margin-top:10px; font-family:monospace; }
+.td { width:2px; background:repeating-linear-gradient(to bottom,#e5e5e5 0,#e5e5e5 6px,transparent 6px,transparent 12px); flex-shrink:0; position:relative; }
+.td::before,.td::after { content:''; position:absolute; left:50%; transform:translateX(-50%); width:16px; height:16px; background:var(--card); border-radius:50%; }
+.td::before { top:-8px; } .td::after { bottom:-8px; }
+.tr { width:140px; background:#f5f5f5; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:18px 12px; gap:8px; flex-shrink:0; }
+.tr-lbl { font-size:8px; letter-spacing:2px; text-transform:uppercase; color:#aaa; text-align:center; }
+.tr-otb { background:#111; color:#fff; font-size:8px; letter-spacing:1.5px; text-transform:uppercase; padding:3px 9px; border-radius:20px; font-weight:600; }
+.actions { display:flex; gap:10px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+.act-btn { padding:10px 20px; border-radius:8px; border:none; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.btn-wa { background:#25D366; color:#fff; }
+.btn-wa:hover { background:#1ebe5d; }
+.btn-dl { background:var(--success); color:#000; }
+.btn-dl:hover { background:#22c55e; }
+.btn-cp { background:transparent; color:var(--muted); border:1px solid var(--border) !important; border-radius:8px; }
+.btn-cp:hover { color:var(--text); border-color:#444 !important; }
+.btn-nw { background:transparent; color:var(--muted); border:1px solid var(--border) !important; border-radius:8px; }
+.btn-nw:hover { color:var(--text); }
+.wa-note { margin-top:12px; background:#0d0d0d; border:1px solid #1a3a1a; border-radius:8px; padding:10px 14px; font-size:12px; color:#4ade80; text-align:center; display:none; }
+
+/* All tickets */
+.all-tickets { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:22px; margin-top:16px; }
+.at-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+.ticket-list { display:flex; flex-direction:column; gap:8px; }
+.ticket-row { background:#111; border:1px solid var(--border); border-radius:9px; padding:12px 14px; display:flex; align-items:center; gap:12px; }
+.t-av { width:34px; height:34px; background:var(--dim); border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:16px; font-weight:800; flex-shrink:0; }
+.t-info { flex:1; min-width:0; }
+.t-name { font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.t-meta { font-size:11px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.t-members { font-size:11px; font-weight:600; color:var(--muted); flex-shrink:0; }
+.badge-used { font-size:10px; font-weight:600; color:#f87171; background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.2); padding:3px 8px; border-radius:20px; flex-shrink:0; }
+.badge-unused { font-size:10px; font-weight:600; color:var(--success); background:rgba(74,222,128,0.08); border:1px solid rgba(74,222,128,0.2); padding:3px 8px; border-radius:20px; flex-shrink:0; }
+.empty-state { text-align:center; color:var(--muted); padding:24px; font-size:13px; }
+.spinner { display:inline-block; width:14px; height:14px; border:2px solid #333; border-top-color:var(--muted); border-radius:50%; animation:spin 0.7s linear infinite; margin-right:6px; vertical-align:middle; }
+.refresh-btn { background:transparent; border:1px solid var(--border); color:var(--muted); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:11px; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+.refresh-btn:hover { border-color:#444; color:var(--text); }
+.count-badge { background:var(--dim); color:var(--muted); font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; border-radius:20px; padding:2px 9px; margin-left:6px; }
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--success); color:#000; padding:11px 24px; border-radius:50px; font-weight:600; font-size:13px; z-index:999; transition:transform 0.3s; pointer-events:none; }
+.toast.show { transform:translateX(-50%) translateY(0); }
+@keyframes spin { to{transform:rotate(360deg)} }
+@media(max-width:460px) { .ticket { flex-direction:column; } .tr { width:100%; flex-direction:row; justify-content:space-around; } .td { width:100%; height:2px; background:repeating-linear-gradient(to right,#e5e5e5 0,#e5e5e5 6px,transparent 6px,transparent 12px); } .td::before { top:50%; left:-8px; transform:translateY(-50%); } .td::after { top:50%; right:-8px; left:auto; transform:translateY(-50%); } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="tag">AfterParty · Admin Panel</div>
+    <div class="logo">CHRONIC<br>WAVES</div>
+    <div class="sub">The Darkhouse</div>
+  </div>
+
+  <div class="nav">
+    <a href="1-admin-panel.html" class="active">Admin</a>
+    <a href="2-scanner.html">Scanner</a>
+    <a href="3-registration.html">Register</a>
+    <a href="4-dashboard.html">Dashboard</a>
+  </div>
+
+  <div class="form-card">
+    <div class="sec-title">Generate Guest Ticket</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Full Name *</label><input type="text" id="guestName" placeholder="Guest name"/></div>
+      <div class="form-group"><label>Email *</label><input type="email" id="guestEmail" placeholder="email@example.com"/></div>
+      <div class="form-group"><label>Phone *</label><input type="tel" id="guestPhone" placeholder="9876543210"/></div>
+      <div class="form-group"><label>Payment Ref</label><input type="text" id="paymentRef" placeholder="TXN123456"/></div>
+      <div class="form-group full">
+        <label>Group Size</label>
+        <div class="members-row">
+          <button class="member-btn active" onclick="selectMembers(this,1)">1</button>
+          <button class="member-btn" onclick="selectMembers(this,2)">2</button>
+          <button class="member-btn" onclick="selectMembers(this,3)">3</button>
+          <button class="member-btn" onclick="selectMembers(this,4)">4</button>
+          <button class="member-btn" onclick="selectMembers(this,5)">5</button>
+        </div>
+      </div>
+      <div class="form-group full"><label>Event Name</label><input type="text" id="eventName" value="ChronicWaves — The Darkhouse"/></div>
+    </div>
+    <button class="gen-btn" id="genBtn" onclick="generateTicket()">GENERATE & SAVE TICKET →</button>
+  </div>
+
+  <div id="output">
+    <div class="ticket-wrap">
+      <div class="success-label">✓ Ticket saved to database</div>
+      <div class="ticket" id="ticketEl">
+        <div class="tl">
+          <div class="tl-event" id="t-event"></div>
+          <div class="tl-name" id="t-name"></div>
+          <div class="tl-email" id="t-email"></div>
+          <div class="tl-details">
+            <div class="tl-row"><span class="tl-lbl">Phone</span><span class="tl-val" id="t-phone"></span></div>
+            <div class="tl-row"><span class="tl-lbl">Payment Ref</span><span class="tl-val" id="t-ref"></span></div>
+            <div class="tl-row"><span class="tl-lbl">Group Size</span><div class="tl-badge" id="t-members"></div></div>
+          </div>
+          <div class="tl-tid" id="t-id"></div>
+        </div>
+        <div class="td"></div>
+        <div class="tr">
+          <div class="tr-lbl">Scan at Gate</div>
+          <div id="qrcode-display"></div>
+          <div class="tr-otb">ONE TIME USE</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="act-btn btn-wa" onclick="shareWhatsApp()">📲 WhatsApp</button>
+        <button class="act-btn btn-dl" onclick="downloadTicket()">⬇ Download</button>
+        <button class="act-btn btn-cp" onclick="copyTicketID()">📋 Copy ID</button>
+        <button class="act-btn btn-nw" onclick="newTicket()">+ New</button>
+      </div>
+      <div class="wa-note" id="waNote">✅ WhatsApp opened! Download ticket image and attach it to the chat.</div>
+    </div>
+  </div>
+
+  <div class="all-tickets">
+    <div class="at-head">
+      <div style="display:flex;align-items:center">
+        <span class="sec-title" style="margin-bottom:0">All Tickets</span>
+        <span class="count-badge" id="ticketCount">0</span>
+      </div>
+      <button class="refresh-btn" onclick="loadTickets()">↻ Refresh</button>
+    </div>
+    <div class="ticket-list" id="ticketList"><div class="empty-state"><span class="spinner"></span>Loading...</div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbziK5ejeBR418BAAQDIrsLQFS3CYyZL2TwC0daQkEvkMyfyWhW2JCJes82D1pCtz3TzaA/exec';
+let selectedMembers = 1, currentTicketID = '', currentPhone = '';
+
+function selectMembers(btn, count) {
+  document.querySelectorAll('.member-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedMembers = count;
+}
+
+function generateUID() {
+  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let id = 'TKT-';
+  for (let i = 0; i < 8; i++) { if (i===4) id+='-'; id+=c[Math.floor(Math.random()*c.length)]; }
+  return id;
+}
+
+async function generateTicket() {
+  const name = document.getElementById('guestName').value.trim();
+  const email = document.getElementById('guestEmail').value.trim();
+  const phone = document.getElementById('guestPhone').value.trim();
+  const ref = document.getElementById('paymentRef').value.trim();
+  const event = document.getElementById('eventName').value.trim() || 'ChronicWaves — The Darkhouse';
+  if (!name) { showToast('Enter guest name', true); return; }
+  if (!email) { showToast('Enter email address', true); return; }
+  if (!phone) { showToast('Enter phone number', true); return; }
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true; btn.textContent = 'SAVING...';
+
+  const ticketID = generateUID();
+  currentTicketID = ticketID; currentPhone = phone;
+  const ts = new Date().toLocaleString('en-IN', { dateStyle:'medium', timeStyle:'short' });
+
+  try {
+    const res = await fetch(API, { method:'POST', body: JSON.stringify({ action:'saveTicket', ticketID, name, email, phone, members: selectedMembers, event, payRef: ref||'N/A' }) });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+
+    document.getElementById('t-event').textContent = event.toUpperCase();
+    document.getElementById('t-name').textContent = name.toUpperCase();
+    document.getElementById('t-email').textContent = email;
+    document.getElementById('t-phone').textContent = phone;
+    document.getElementById('t-ref').textContent = ref || '—';
+    document.getElementById('t-members').textContent = `👥 ${selectedMembers} ${selectedMembers===1?'Guest':'Guests'}`;
+    document.getElementById('t-id').textContent = `${ticketID} · ${ts}`;
+
+    const qrc = document.getElementById('qrcode-display');
+    qrc.innerHTML = '';
+    new QRCode(qrc, { text: JSON.stringify({id:ticketID,m:selectedMembers}), width:110, height:110, colorDark:'#111', colorLight:'#f5f5f5', correctLevel: QRCode.CorrectLevel.M });
+
+    document.getElementById('output').style.display = 'block';
+    document.getElementById('output').scrollIntoView({ behavior:'smooth', block:'start' });
+    showToast('Ticket saved!');
+    loadTickets();
+  } catch(err) {
+    showToast('Error: '+err.message, true);
+  } finally {
+    btn.disabled = false; btn.textContent = 'GENERATE & SAVE TICKET →';
+  }
+}
+
+async function loadTickets() {
+  const list = document.getElementById('ticketList');
+  list.innerHTML = '<div class="empty-state"><span class="spinner"></span>Loading...</div>';
+  try {
+    const res = await fetch(`${API}?action=getTickets`);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+    document.getElementById('ticketCount').textContent = data.tickets.length;
+    if (data.tickets.length === 0) { list.innerHTML = '<div class="empty-state">No tickets yet.</div>'; return; }
+    list.innerHTML = data.tickets.slice().reverse().map(t => `
+      <div class="ticket-row">
+        <div class="t-av">${(t['Name']||'?')[0].toUpperCase()}</div>
+        <div class="t-info">
+          <div class="t-name">${t['Name']||'—'}</div>
+          <div class="t-meta">${t['Phone']||''} · ${t['Issued At']||''}</div>
+        </div>
+        <div class="t-members">👥 ${t['Members']||1}</div>
+        <span class="${t['Status']==='USED'?'badge-used':'badge-unused'}">${t['Status']==='USED'?'USED':'UNUSED'}</span>
+      </div>`).join('');
+  } catch(err) {
+    list.innerHTML = `<div class="empty-state">Error: ${err.message}</div>`;
+  }
+}
+
+function downloadTicket() {
+  const qrCanvas = document.querySelector('#qrcode-display canvas');
+  if (!qrCanvas) { showToast('Generate a ticket first', true); return; }
+  const W=680, H=250;
+  const c = document.createElement('canvas'); c.width=W; c.height=H;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.roundRect(0,0,W,H,12); ctx.fill();
+  ctx.fillStyle='#111'; ctx.fillRect(0,0,5,H);
+  const name = document.getElementById('t-name').textContent;
+  const event = document.getElementById('t-event').textContent;
+  const email = document.getElementById('t-email').textContent;
+  const phone = document.getElementById('t-phone').textContent;
+  const ref = document.getElementById('t-ref').textContent;
+  const members = document.getElementById('t-members').textContent;
+  const tid = document.getElementById('t-id').textContent;
+  ctx.fillStyle='#c084fc'; ctx.font='bold 10px Arial'; ctx.fillText(event,22,30);
+  ctx.fillStyle='#111'; ctx.font='bold 26px Arial'; ctx.fillText(name,22,64);
+  ctx.fillStyle='#888'; ctx.font='12px Arial'; ctx.fillText(email,22,86);
+  ctx.strokeStyle='#eee'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(22,100); ctx.lineTo(480,100); ctx.stroke();
+  [['PHONE',phone],['PAYMENT REF',ref],['GROUP SIZE',members]].forEach(([l,v],i)=>{
+    const x=22+i*150;
+    ctx.fillStyle='#aaa'; ctx.font='9px Arial'; ctx.fillText(l,x,120);
+    ctx.fillStyle='#111'; ctx.font='bold 12px Arial'; ctx.fillText(v,x,136);
+  });
+  ctx.fillStyle='#bbb'; ctx.font='9px monospace'; ctx.fillText(tid,22,H-14);
+  ctx.setLineDash([5,5]); ctx.strokeStyle='#ddd'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(496,8); ctx.lineTo(496,H-8); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle='#f5f5f5'; ctx.beginPath(); ctx.roundRect(502,0,W-502,H,[0,12,12,0]); ctx.fill();
+  ctx.fillStyle='#aaa'; ctx.font='bold 8px Arial'; ctx.textAlign='center'; ctx.fillText('SCAN AT GATE',W-89,22);
+  const img = new Image();
+  img.onload = () => {
+    ctx.drawImage(img,W-154,30,130,130);
+    ctx.fillStyle='#111'; ctx.beginPath(); ctx.roundRect(W-144,172,110,18,9); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='bold 8px Arial'; ctx.fillText('ONE TIME USE',W-89,183);
+    const link=document.createElement('a'); link.download=`ticket-${currentTicketID}.png`; link.href=c.toDataURL('image/png'); link.click();
+  };
+  img.src = qrCanvas.toDataURL('image/png');
+}
+
+function shareWhatsApp() {
+  const name = document.getElementById('guestName').value.trim();
+  const event = document.getElementById('eventName').value.trim() || 'ChronicWaves — The Darkhouse';
+  const phone = currentPhone.replace(/\D/g,'');
+  const msg = `🎉 *Your Entry Ticket is Ready!*\n\nHey ${name}! Your spot at *${event}* is confirmed.\n\n📍 *Venue:* Mangalore House, Kulur Ferry Rd\n📅 *Date:* 13th March 2026 · 7 PM\n\n🎟️ *Ticket ID:* ${currentTicketID}\n👥 *Group Size:* ${selectedMembers} ${selectedMembers===1?'Person':'People'}\n\n📌 Show this QR code at the gate\n⚠️ Valid for ONE TIME USE only\n\nSee you there! 🎵🌙`;
+  const url = phone ? `https://wa.me/${phone.startsWith('91')?phone:'91'+phone}?text=${encodeURIComponent(msg)}` : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  window.open(url,'_blank');
+  document.getElementById('waNote').style.display='block';
+}
+
+function copyTicketID() {
+  if (!currentTicketID) { showToast('No ticket yet', true); return; }
+  try {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(currentTicketID);
+    else { const t=document.createElement('textarea'); t.value=currentTicketID; t.style.position='fixed'; t.style.opacity='0'; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); }
+    showToast('Ticket ID copied!');
+  } catch(e) { showToast('Copy failed', true); }
+}
+
+function newTicket() {
+  document.getElementById('output').style.display='none';
+  ['guestName','guestEmail','guestPhone','paymentRef'].forEach(id => document.getElementById(id).value='');
+  document.querySelectorAll('.member-btn').forEach((b,i) => b.classList.toggle('active',i===0));
+  selectedMembers=1; currentTicketID=''; currentPhone='';
+  document.getElementById('waNote').style.display='none';
+  document.querySelector('.form-card').scrollIntoView({behavior:'smooth'});
+}
+
+function showToast(msg, isError=false) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.background=isError?'#f87171':'var(--success)'; t.style.color=isError?'#fff':'#000';
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+loadTickets();
+</script>
+</body>
+</html>
