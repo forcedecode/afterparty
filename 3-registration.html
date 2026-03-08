@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Register — ChronicWaves</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+:root { --bg:#0d0d0d; --card:#161616; --border:#222; --text:#f0f0f0; --muted:#666; --accent:#c084fc; --dim:#2a2a2a; }
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; padding:32px 20px 60px; }
+.container { max-width:520px; margin:0 auto; }
+.header { text-align:center; margin-bottom:28px; }
+.tag { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+.logo { font-family:'Syne',sans-serif; font-size:clamp(30px,9vw,48px); font-weight:800; color:var(--text); line-height:1; margin-bottom:4px; }
+.sub { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--accent); font-weight:600; margin-bottom:0; font-family:'Syne',sans-serif; }
+.nav { display:flex; justify-content:center; gap:8px; margin:20px 0 24px; flex-wrap:wrap; }
+.nav a { padding:7px 14px; border-radius:7px; border:1px solid var(--border); color:var(--muted); font-size:11px; text-decoration:none; transition:all 0.2s; }
+.nav a:hover, .nav a.active { border-color:#444; color:var(--text); background:var(--dim); }
+.event-strip { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 18px; display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+.strip-item { display:flex; flex-direction:column; gap:2px; }
+.strip-label { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
+.strip-value { font-size:13px; font-weight:600; color:var(--text); }
+.ref-banner { background:var(--dim); border:1px solid #333; border-radius:10px; padding:14px 16px; margin-bottom:20px; display:flex; align-items:flex-start; gap:12px; }
+.ref-icon { font-size:22px; flex-shrink:0; margin-top:2px; }
+.ref-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:var(--text); margin-bottom:3px; }
+.ref-desc { font-size:12px; color:var(--muted); line-height:1.5; }
+.form-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:22px; margin-bottom:14px; }
+.sec-title { font-family:'Syne',sans-serif; font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-group { margin-bottom:14px; }
+.form-group:last-child { margin-bottom:0; }
+label { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-weight:500; display:block; margin-bottom:6px; }
+input, select, textarea { background:#0d0d0d; border:1px solid var(--border); border-radius:7px; padding:10px 13px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px; outline:none; transition:border-color 0.2s; width:100%; }
+input:focus, select:focus, textarea:focus { border-color:#444; }
+select option { background:#161616; }
+textarea { resize:none; height:68px; }
+.members-row { display:flex; gap:7px; flex-wrap:wrap; }
+.member-btn { background:#0d0d0d; border:1px solid var(--border); border-radius:6px; color:var(--muted); font-size:12px; font-family:'DM Sans',sans-serif; padding:8px 13px; cursor:pointer; transition:all 0.2s; }
+.member-btn:hover { border-color:#444; color:var(--text); }
+.member-btn.active { background:var(--text); border-color:var(--text); color:#000; font-weight:600; }
+.price-row { display:flex; justify-content:space-between; align-items:center; background:#0d0d0d; border:1px solid var(--border); border-radius:7px; padding:12px 14px; margin-bottom:14px; }
+.price-label { font-size:12px; color:var(--muted); }
+.price-val { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; color:var(--text); }
+.pay-box { background:#0d0d0d; border:1px solid var(--border); border-radius:7px; padding:13px 14px; margin-bottom:14px; }
+.pay-title { font-size:10px; font-weight:600; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:8px; }
+.pay-detail { font-size:12px; color:var(--muted); line-height:1.9; }
+.pay-detail strong { color:#aaa; }
+.ref-inner { background:#0d0d0d; border:1px solid #2a2a2a; border-radius:8px; padding:14px; margin-bottom:14px; }
+.ref-inner-title { font-size:10px; font-weight:600; color:var(--accent); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:12px; }
+.ref-note { font-size:11px; color:var(--muted); margin-top:8px; line-height:1.6; }
+.submit-btn { width:100%; padding:14px; background:var(--text); border:none; border-radius:10px; color:#000; font-family:'Syne',sans-serif; font-size:15px; font-weight:800; letter-spacing:2px; cursor:pointer; transition:all 0.2s; text-transform:uppercase; }
+.submit-btn:hover { background:#ddd; }
+.submit-btn:disabled { opacity:0.5; cursor:not-allowed; }
+#successState { display:none; }
+.success-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:32px 22px; text-align:center; }
+.s-icon { font-size:44px; margin-bottom:14px; }
+.s-title { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; margin-bottom:8px; }
+.s-msg { font-size:13px; color:var(--muted); line-height:1.7; margin-bottom:18px; }
+.s-details { background:#0d0d0d; border:1px solid var(--border); border-radius:8px; padding:14px; font-size:13px; color:#aaa; line-height:1.9; text-align:left; }
+.s-details strong { color:var(--text); }
+.reg-again { margin-top:14px; width:100%; padding:11px; background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; transition:all 0.2s; }
+.reg-again:hover { border-color:#444; color:var(--text); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="tag">AfterParty · Registration</div>
+    <div class="logo">CHRONIC<br>WAVES</div>
+    <div class="sub">The Darkhouse</div>
+  </div>
+
+  <div class="event-strip">
+    <div class="strip-item"><span class="strip-label">Venue</span><span class="strip-value">Mangalore House</span></div>
+    <div class="strip-item"><span class="strip-label">Date</span><span class="strip-value">13 March 2026</span></div>
+    <div class="strip-item"><span class="strip-label">Time</span><span class="strip-value">7 PM Onwards</span></div>
+    <div class="strip-item"><span class="strip-label">Entry</span><span class="strip-value">₹200 / person</span></div>
+  </div>
+
+  <div class="ref-banner">
+    <div class="ref-icon">🎁</div>
+    <div>
+      <div class="ref-title">Refer 6 Friends → Free Entry!</div>
+      <div class="ref-desc">Get 6 people to register using your name as referral and earn 1 FREE entry automatically.</div>
+    </div>
+  </div>
+
+  <div id="formState">
+    <div class="form-card">
+      <div class="sec-title">Personal Details</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="regName" placeholder="Your name"/>
+        </div>
+        <div class="form-group">
+          <label>WhatsApp No. *</label>
+          <input type="tel" id="regPhone" placeholder="9876543210"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email Address *</label>
+        <input type="email" id="regEmail" placeholder="your@email.com"/>
+      </div>
+      <div class="form-group">
+        <label>Group Size *</label>
+        <div class="members-row">
+          <button class="member-btn active" onclick="selectMembers(this,1)">Just Me</button>
+          <button class="member-btn" onclick="selectMembers(this,2)">2</button>
+          <button class="member-btn" onclick="selectMembers(this,3)">3</button>
+          <button class="member-btn" onclick="selectMembers(this,4)">4</button>
+          <button class="member-btn" onclick="selectMembers(this,5)">5</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="sec-title">Payment</div>
+      <div class="price-row">
+        <span class="price-label">Total Amount</span>
+        <span class="price-val" id="priceDisplay">₹200</span>
+      </div>
+      <div class="pay-box">
+        <div class="pay-title">Pay via UPI</div>
+        <div class="pay-detail">
+          UPI ID: <strong>yourUPI@upi</strong><br>
+          Name: <strong>Your Name</strong><br>
+          Amount: <strong id="payAmt">₹200</strong>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Transaction ID *</label>
+        <input type="text" id="regPayRef" placeholder="e.g. TXN123456789"/>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="sec-title">Referral</div>
+      <div class="ref-inner">
+        <div class="ref-inner-title">🎁 Referral Info</div>
+        <div class="form-group" style="margin-bottom:10px">
+          <label>Who referred you?</label>
+          <input type="text" id="referredBy" placeholder="Their name (leave empty if none)"/>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Your referral name (so others can refer you)</label>
+          <input type="text" id="myReferralName" placeholder="Name others will use"/>
+        </div>
+        <div class="ref-note">Every 6 referrals you bring = 1 free entry for you 🎉</div>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label>Notes (optional)</label>
+        <textarea id="regNotes" placeholder="Anything for the organizers..."></textarea>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" onclick="submitRegistration()">REGISTER NOW →</button>
+  </div>
+
+  <div id="successState">
+    <div class="success-card">
+      <div class="s-icon">🎉</div>
+      <div class="s-title">You're In!</div>
+      <div class="s-msg">Registration received! We'll verify your payment and send your QR ticket to WhatsApp shortly.</div>
+      <div class="s-details" id="successDetails"></div>
+    </div>
+    <button class="reg-again" onclick="registerAgain()">+ Register Another Person</button>
+  </div>
+</div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbziK5ejeBR418BAAQDIrsLQFS3CYyZL2TwC0daQkEvkMyfyWhW2JCJes82D1pCtz3TzaA/exec';
+let regMembers = 1;
+const PRICE = 200;
+
+function selectMembers(btn, count) {
+  document.querySelectorAll('.member-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  regMembers = count;
+  document.getElementById('priceDisplay').textContent = `₹${count * PRICE}`;
+  document.getElementById('payAmt').textContent = `₹${count * PRICE}`;
+}
+
+async function submitRegistration() {
+  const name = document.getElementById('regName').value.trim();
+  const phone = document.getElementById('regPhone').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const payRef = document.getElementById('regPayRef').value.trim();
+  const referredBy = document.getElementById('referredBy').value.trim();
+  const myReferralName = document.getElementById('myReferralName').value.trim();
+  const notes = document.getElementById('regNotes').value.trim();
+
+  if (!name) { alert('Please enter your name'); return; }
+  if (!phone) { alert('Please enter your WhatsApp number'); return; }
+  if (!email) { alert('Please enter your email'); return; }
+  if (!payRef) { alert('Please enter your transaction ID'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'SUBMITTING...';
+
+  try {
+    const res = await fetch(API, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'saveRegistration', name, phone, email, members: regMembers, payRef, referredBy, myReferralName, notes, event: 'ChronicWaves — The Darkhouse' })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+    document.getElementById('formState').style.display = 'none';
+    document.getElementById('successState').style.display = 'block';
+    document.getElementById('successDetails').innerHTML = `
+      <strong>Name:</strong> ${name}<br>
+      <strong>WhatsApp:</strong> ${phone}<br>
+      <strong>Group:</strong> ${regMembers} ${regMembers===1?'person':'people'}<br>
+      <strong>Amount:</strong> ₹${regMembers*PRICE}<br>
+      <strong>Txn ID:</strong> ${payRef}
+      ${referredBy ? `<br><strong>Referred By:</strong> ${referredBy}` : ''}`;
+  } catch(err) {
+    alert('Error: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'REGISTER NOW →';
+  }
+}
+
+function registerAgain() {
+  document.getElementById('formState').style.display = 'block';
+  document.getElementById('successState').style.display = 'none';
+  ['regName','regPhone','regEmail','regPayRef','referredBy','myReferralName','regNotes'].forEach(id => document.getElementById(id).value='');
+  document.querySelectorAll('.member-btn').forEach((b,i) => b.classList.toggle('active',i===0));
+  regMembers = 1;
+  document.getElementById('priceDisplay').textContent = '₹200';
+  document.getElementById('payAmt').textContent = '₹200';
+}
+</script>
+</body>
+</html>
